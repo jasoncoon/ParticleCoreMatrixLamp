@@ -28,33 +28,12 @@ typedef uint8_t (*SimplePattern)();
 typedef SimplePattern SimplePatternList[];
 typedef struct { SimplePattern drawFrame;  char name[32]; } PatternAndName;
 typedef PatternAndName PatternAndNameList[];
- 
-// These times are in seconds, but could be changed to milliseconds if desired;
-// there's some discussion further below.
- 
-const PatternAndNameList patterns = { 
-  { test,               "Test" },
-  { rainbow,            "Rainbow" },
-  { rainbowWithGlitter, "Rainbow With Glitter" },
-  { confetti,           "Confetti" },
-  { sinelon,            "Sinelon" },
-  { bpm,                "Beat" },
-  { juggle,             "Juggle" },
-  { fire,               "Fire" },
-  { water,              "Water" },
-  { wave,               "Wave" },
-  { analogClock,        "Analog Clock" },
-  { fastAnalogClock,    "Fast Analog Clock Test" },
-  { showSolidColor,     "Solid Color" }
-};
 
 uint8_t brightness = 32;
 
-int patternCount = ARRAY_SIZE(patterns);
 int patternIndex = 0;
 char patternName[32] = "Rainbow";
 int power = 1;
-int flipClock = 0;
 
 int timezone = -6;
 unsigned long lastTimeSync = millis();
@@ -71,6 +50,52 @@ int b = 255;
 SYSTEM_MODE(SEMI_AUTOMATIC);
 
 int offlinePin = D7;
+
+uint8_t XY( uint8_t x, uint8_t y)
+{
+    uint8_t i;
+  
+    if( MatrixSerpentineLayout == false) {
+        i = (y * MatrixWidth) + x;
+    }
+    else if( MatrixSerpentineLayout == true) {
+        // my custom matrix is rotated serpentine, it runs top to bottom, then counter-clockwise, then bottom to top, etc.
+        if( x & 0x01) {
+            // Odd columns run backwards
+            uint8_t reverseY = (MatrixHeight - 1) - y;
+            i = (x * MatrixHeight) + reverseY;
+        } else {
+            // Even columns run forwards
+            i = (x * MatrixHeight) + y;
+        }
+    }
+    
+    if( i > NUM_LEDS )
+        i = 0;
+    
+    return i;
+}
+
+#include "life.h"
+#include "colortwinkles.h"
+
+const PatternAndNameList patterns = { 
+  { softtwinkles,       "Soft Twinkles" },
+  { colorTwinkles,      "Color Twinkles" },
+  { life,               "Life" },
+  { rainbow,            "Rainbow" },
+  { rainbowWithGlitter, "Rainbow With Glitter" },
+  { confetti,           "Confetti" },
+  { sinelon,            "Sinelon" },
+  { bpm,                "Beat" },
+  { juggle,             "Juggle" },
+  { fire,               "Fire" },
+  { water,              "Water" },
+  { wave,               "Wave" },
+  { showSolidColor,     "Solid Color" }
+};
+
+int patternCount = ARRAY_SIZE(patterns);
 
 void setup() {
     FastLED.addLeds<CHIPSET, LED_PIN, CLOCK_PIN, COLOR_ORDER, DATA_RATE_MHZ(12)>(leds, NUM_LEDS);
@@ -112,12 +137,6 @@ void setup() {
     else if (patternIndex >= patternCount)
         patternIndex = patternCount - 1;
     
-    flipClock = EEPROM.read(4);
-    if(flipClock < 0)
-        flipClock = 0;
-    else if (flipClock > 1)
-        flipClock = 1;
-        
     r = EEPROM.read(5);
     g = EEPROM.read(6);
     b = EEPROM.read(7);
@@ -137,7 +156,6 @@ void setup() {
     Spark.variable("power", &power, INT);
     Spark.variable("brightness", &brightness, INT);
     Spark.variable("timezone", &timezone, INT);
-    Spark.variable("flipClock", &flipClock, INT);
     Spark.variable("patternCount", &patternCount, INT);
     Spark.variable("patternIndex", &patternIndex, INT);
     Spark.variable("patternName", patternName, STRING);
@@ -172,31 +190,6 @@ void loop() {
   EVERY_N_MILLISECONDS( 20 ) { gHue++; } // slowly cycle the "base color" through the rainbow
 }
 
-uint8_t XY( uint8_t x, uint8_t y)
-{
-    uint8_t i;
-  
-    if( MatrixSerpentineLayout == false) {
-        i = (y * MatrixWidth) + x;
-    }
-    else if( MatrixSerpentineLayout == true) {
-        // my custom matrix is rotated serpentine, it runs top to bottom, then counter-clockwise, then bottom to top, etc.
-        if( x & 0x01) {
-            // Odd columns run backwards
-            uint8_t reverseY = (MatrixHeight - 1) - y;
-            i = (x * MatrixHeight) + reverseY;
-        } else {
-            // Even columns run forwards
-            i = (x * MatrixHeight) + y;
-        }
-    }
-    
-    if( i > NUM_LEDS )
-        i = 0;
-    
-    return i;
-}
-
 int setVariable(String args) {
     if(args.startsWith("pwr:")) {
         return setPower(args.substring(4));
@@ -206,9 +199,6 @@ int setVariable(String args) {
     }
     else if (args.startsWith("tz:")) {
         return setTimezone(args.substring(3));
-    }
-    else if (args.startsWith("flpclk:")) {
-        return setFlipClock(args.substring(7));
     }
     else if (args.startsWith("r:")) {
         r = parseByte(args.substring(2));
@@ -279,18 +269,6 @@ int setTimezone(String args) {
     return power;
 }
 
-int setFlipClock(String args) {
-    flipClock = args.toInt();
-    if(flipClock < 0)
-        flipClock = 0;
-    else if (flipClock > 1)
-        flipClock = 1;
-    
-    EEPROM.write(4, flipClock);
-    
-    return flipClock;
-}
-
 byte parseByte(String args) {
     int c = args.toInt();
     if(c < 0)
@@ -327,29 +305,29 @@ int setPatternName(String args)
     return index;
 }
 
-uint8_t testX = 0;
-uint8_t testY = 0;
+// For this animation to work, the Red component of this
+// color MUST be nonzero, AND must be an EVEN number.
+const CRGB lightcolor(8,7,1);
 
-uint8_t test() 
-{
-    fill_solid(leds, NUM_LEDS, CRGB::Black);
-    
-    leds[XY(testX, testY)] = CHSV(gHue, 255, 255);
-    
-    // EVERY_N_MILLIS(250) {
-        testX++;
-        
-        if(testX >= MatrixWidth) {
-            testX = 0;
-            
-            testY++;
-            
-            if(testY >= MatrixHeight)
-                testY = 0;
-        }
-    // }
-    
-    return 8;
+uint8_t softtwinkles() {
+  for( int i = 0; i < NUM_LEDS; i++) {
+    if( !leds[i]) continue; // skip black pixels
+    if( leds[i].r & 1) { // is red odd?
+      leds[i] -= lightcolor; // darken if red is odd
+    } else {
+      leds[i] += lightcolor; // brighten if red is even
+    }
+  }
+  
+  // Randomly choose a pixel, and if it's black, 'bump' it up a little.
+  // Since it will now have an EVEN red component, it will start getting
+  // brighter over time.
+  if( random8() < 80) {
+    int j = random16(NUM_LEDS);
+    if( !leds[j] ) leds[j] = lightcolor;
+  }
+  
+  return 20;
 }
 
 const uint8_t huesPerColumn = 255 / MatrixWidth;
@@ -429,44 +407,6 @@ uint8_t water() {
     heatMap(icePalette, false);
     
     return 8;
-}
-
-uint8_t analogClock() {
-    dimAll(220);
-    
-    drawAnalogClock(Time.second(), Time.minute(), Time.hourFormat12(), true, true);
-    
-    return 8;
-}
-
-byte fastSecond = 0;
-byte fastMinute = 0;
-byte fastHour = 1;
-
-uint8_t fastAnalogClock() {
-    fill_solid(leds, NUM_LEDS, CRGB::Black);
-    
-    drawAnalogClock(fastSecond, fastMinute, fastHour, false, false);
-        
-    fastMinute++;
-    
-    // fastSecond++;
-    
-    // if(fastSecond >= 60) {
-    //     fastSecond = 0;
-    //     fastMinute++;
-    // }
-     
-    if(fastMinute >= 60) {
-        fastMinute = 0;
-        fastHour++;
-    }
-    
-    if(fastHour >= 13) {
-        fastHour = 1;
-    }
-        
-    return 125;
 }
 
 uint8_t showSolidColor() {
@@ -615,69 +555,6 @@ void heatMap(CRGBPalette16 palette, bool up) {
             leds[xy] = ColorFromPalette(palette, colorIndex);
         }
       }
-}
-
-int oldSecTime = 0;
-int oldSec = 0;
-
-void drawAnalogClock(byte second, byte minute, byte hour, boolean drawMillis, boolean drawSecond) {
-    if(Time.second() != oldSec){
-        oldSecTime = millis();
-        oldSec = Time.second();
-    }
-    
-    int millisecond = millis() - oldSecTime;
-    
-    int secondIndex = map(second, 0, 59, 0, NUM_LEDS);
-    int minuteIndex = map(minute, 0, 59, 0, NUM_LEDS);
-    int hourIndex = map(hour * 5, 5, 60, 0, NUM_LEDS);
-    int millisecondIndex = map(secondIndex + millisecond * .06, 0, 60, 0, NUM_LEDS);
-    
-    if(millisecondIndex >= NUM_LEDS)
-        millisecondIndex -= NUM_LEDS;
-    
-    hourIndex += minuteIndex / 12;
-    
-    if(hourIndex >= NUM_LEDS)
-        hourIndex -= NUM_LEDS;
-    
-    // see if we need to reverse the order of the LEDS
-    if(flipClock == 1) {
-        int max = NUM_LEDS - 1;
-        secondIndex = max - secondIndex;
-        minuteIndex = max - minuteIndex;
-        hourIndex = max - hourIndex;
-        millisecondIndex = max - millisecondIndex;
-    }
-    
-    if(secondIndex >= NUM_LEDS)
-        secondIndex = NUM_LEDS - 1;
-    else if(secondIndex < 0)
-        secondIndex = 0;
-    
-    if(minuteIndex >= NUM_LEDS)
-        minuteIndex = NUM_LEDS - 1;
-    else if(minuteIndex < 0)
-        minuteIndex = 0;
-        
-    if(hourIndex >= NUM_LEDS)
-        hourIndex = NUM_LEDS - 1;
-    else if(hourIndex < 0)
-        hourIndex = 0;
-        
-    if(millisecondIndex >= NUM_LEDS)
-        millisecondIndex = NUM_LEDS - 1;
-    else if(millisecondIndex < 0)
-        millisecondIndex = 0;
-    
-    if(drawMillis)
-        leds[millisecondIndex] += CRGB(0, 0, 127); // Blue
-        
-    if(drawSecond)
-        leds[secondIndex] += CRGB(0, 0, 127); // Blue
-        
-    leds[minuteIndex] += CRGB::Green;
-    leds[hourIndex] += CRGB::Red;
 }
 
 // scale the brightness of all pixels down
