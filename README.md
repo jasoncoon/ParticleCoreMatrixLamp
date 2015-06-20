@@ -5,7 +5,7 @@ Control a small matrix of APA102C RGB LEDs with a [Spark Core] via a web browser
 
 [Demo Video](https://www.youtube.com/watch?v=s3mbcSl60YI):
 
-[![Demo Video](http://img.youtube.com/vi/s3mbcSl60YI/0.jpg)](https://www.youtube.com/watch?v=s3mbcSl60YI)
+<iframe width="560" height="315" src="https://www.youtube.com/embed/s3mbcSl60YI" frameborder="0" allowfullscreen></iframe>
 
 Hardware
 --------
