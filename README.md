@@ -11,8 +11,7 @@ Hardware
 --------
 Requires:
 
-[![Particle Core](https://store.particle.io/assets/core-a6fcc2b47e235d529ab58fe0a1124588.png)](https://store.particle.io/?product=spark-core)
-
+* [Particle Core](https://store.particle.io/assets/core-a6fcc2b47e235d529ab58fe0a1124588.png)
 * RGB LED strip.  I used this strip of [APA102C RGB LEDs 144 per meter](http://www.aliexpress.com/item/1-meter-144pcs-APA-102C-addressable-led-pixel-strip-144pixels-m-non-waterproof-WHITE-PCB/32268465139.html), but you could easily use NeoPixels or other LED strips.  Adafruit sells APA102s as [DotStars](https://learn.adafruit.com/adafruit-dotstar-leds/overview).
 * Small 5V USB power supply, at least 2A.
 * USB cable
