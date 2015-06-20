@@ -1,43 +1,34 @@
-SparkRing
+Particle Core Matrix Lamp
 =========
 
-Control a [Adafruit NeoPixel Ring] with a [Spark Core] via a web browser or smartphone app.
+Control a small matrix of APA102C RGB LEDs with a [Spark Core] via a web browser or smartphone app.
 
-[Demo Video](http://www.youtube.com/watch?v=caFzIyTgmRw):
+[Demo Video](https://www.youtube.com/watch?v=s3mbcSl60YI):
 
-[![Demo Video](http://img.youtube.com/vi/caFzIyTgmRw/3.jpg)](http://www.youtube.com/watch?v=caFzIyTgmRw)
+[![Demo Video](http://img.youtube.com/vi/s3mbcSl60YI/0.jpg)](https://www.youtube.com/watch?v=s3mbcSl60YI)
 
 Hardware
 --------
 Requires:
 
-[Spark Core]
+[Particle Core]
 
-[![Spark Core](https://www.adafruit.com/images/230x173/2127-01.jpg)](https://www.adafruit.com/product/2127)
+[![Spark Core](https://store.particle.io/assets/core-a6fcc2b47e235d529ab58fe0a1124588.png)](https://store.particle.io/?product=spark-core)
 
-Either of the following:
+Optional:
 
-[Adafruit NeoPixel Ring]
-
-[![Spark Ring](spark-ring-2.png)](https://www.adafruit.com/product/1586)
-
-[Adafruit Spark NeoPixel Ring Kit] *not currently available*:
-
-[![Adafruit Spark NeoPixel Ring Kit](https://www.adafruit.com/images/230x173/2268-01.jpg)](https://www.adafruit.com/product/2268)
+[IKEA LAMPAN Lamp], or some other way of mounting the LEDs.
 
 Features
 --------
-* Turn the NeoPixel Ring on and off
-* Adjust the time zone
+* Turn the lamp on and off
 * Adjust the brightness
 * Change the display pattern
+* Display a solid color
 
-Patterns are requested by the app from the Spark Core, so as new patterns are added, they're automatically listed in the app.
+Patterns are requested by the app from the Core, so as new patterns are added, they're automatically listed in the app.
 
-![Spark Ring App](spark-ring-app-1.png)
+![Particle Core Matrix Lamp](app-1.png)
 
-[Spark Core]:https://www.adafruit.com/product/2127
-[Adafruit NeoPixel Ring]:https://www.adafruit.com/product/1586
-[Adafruit Spark NeoPixel Ring Kit]:https://www.adafruit.com/products/2268
-[spark-ring-app-1]:spark-ring-app-1.png
-[spark-ring-1]:spark-ring-1.png
+[Particle Core]:https://store.particle.io/?product=spark-core
+[IKEA LAMPAN Lamp]:http://www.ikea.com/us/en/catalog/products/20055421/
