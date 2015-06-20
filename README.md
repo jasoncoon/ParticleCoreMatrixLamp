@@ -1,7 +1,7 @@
 Particle Core Matrix Lamp
 =========
 
-Control a small matrix of APA102C RGB LEDs with a [Spark Core] via a web browser or smartphone app.
+Control a small matrix of APA102C RGB LEDs with a [Particle Core] via a web browser or smartphone app.
 
 [Demo Video](https://www.youtube.com/watch?v=s3mbcSl60YI):
 
